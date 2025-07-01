@@ -1,0 +1,249 @@
+<!-- templates/index.html (Frontend) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Fielding Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .card { border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
+        .header-bg { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        .upload-container { background-color: #f8f9fa; border-radius: 10px; }
+        .table-hover tbody tr:hover { background-color: rgba(42, 82, 152, 0.05); }
+        .ps-badge { font-size: 0.9rem; padding: 0.35em 0.65em; }
+    </style>
+</head>
+<body>
+    <div class="header-bg text-white py-4 mb-4">
+        <div class="container">
+            <h1 class="display-5 fw-bold"><i class="bi bi-graph-up"></i> Cricket Fielding Analysis</h1>
+            <p class="lead">Upload match data to calculate player fielding performance scores</p>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-upload"></i> Upload Match Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="upload-container p-4 mb-4 text-center">
+                            <i class="bi bi-file-earmark-spreadsheet display-1 text-primary mb-3"></i>
+                            <p class="text-muted">Upload Excel file in the specified format</p>
+                            <form id="uploadForm">
+                                <div class="mb-3">
+                                    <input class="form-control" type="file" id="fileInput" accept=".xlsx, .xls">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-cloud-arrow-up"></i> Analyze Data
+                                </button>
+                            </form>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="/sample" class="btn btn-outline-primary">
+                                <i class="bi bi-download"></i> Download Sample Data
+                            </a>
+                            <button id="infoBtn" class="btn btn-outline-info" data-bs-toggle="modal" data-bs-target="#infoModal">
+                                <i class="bi bi-info-circle"></i> Scoring Metrics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resultsSection" class="d-none">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0"><i class="bi bi-table"></i> Fielding Performance Results</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle" id="resultsTable">
+                                    <thead class="table-light">
+                                        <tr></tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal fade" id="infoModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Performance Scoring Metrics</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-header bg-info text-white">Positive Actions</div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <span class="badge bg-primary ps-badge">+3</span> Catches (C)
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="badge bg-primary ps-badge">+3</span> Stumpings (ST)
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="badge bg-primary ps-badge">+3</span> Run Outs (RO)
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="badge bg-primary ps-badge">+2</span> Direct Hits (DH)
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="badge bg-primary ps-badge">+1</span> Clean Picks (CP)
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="badge bg-primary ps-badge">+1</span> Good Throws (GT)
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header bg-warning">Negative Actions</div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <span class="badge bg-danger ps-badge">-3</span> Dropped Catches (DC)
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="badge bg-danger ps-badge">-2</span> Missed Run Outs (MRO)
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="badge bg-secondary ps-badge">±N</span> Runs Saved/Conceded (RS)
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="card mt-3">
+                                <div class="card-header bg-success text-white">Formula</div>
+                                <div class="card-body">
+                                    <p class="mb-0">
+                                        PS = (CP×1) + (GT×1) + (C×3) + (DC×-3) + (ST×3) + (RO×3) + (MRO×-2) + (DH×2) + RS
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.error) {
+                    alert(`Error: ${result.error}`);
+                    return;
+                }
+                
+                displayResults(result.data, result.columns);
+            } catch (error) {
+                alert('Error processing file: ' + error.message);
+            }
+        });
+
+        function displayResults(data, columns) {
+            const resultsSection = document.getElementById('resultsSection');
+            const table = document.getElementById('resultsTable');
+            const thead = table.querySelector('thead tr');
+            const tbody = table.querySelector('tbody');
+            
+            // Clear previous results
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            // Create headers
+            columns.forEach(col => {
+                const th = document.createElement('th');
+                th.textContent = col;
+                th.scope = 'col';
+                
+                // Highlight PS column
+                if (col === 'Performance Score (PS)') {
+                    th.classList.add('bg-success', 'text-white');
+                }
+                thead.appendChild(th);
+            });
+            
+            // Create rows
+            data.forEach(player => {
+                const tr = document.createElement('tr');
+                
+                columns.forEach(col => {
+                    const td = document.createElement('td');
+                    let value = player[col];
+                    
+                    // Format PS value
+                    if (col === 'Performance Score (PS)') {
+                        td.classList.add('fw-bold');
+                        value = parseFloat(value).toFixed(1);
+                        
+                        // Add badge with color coding
+                        const badge = document.createElement('span');
+                        badge.className = 'badge ps-badge';
+                        badge.textContent = value;
+                        
+                        if (value >= 10) {
+                            badge.classList.add('bg-success');
+                        } else if (value >= 5) {
+                            badge.classList.add('bg-primary');
+                        } else if (value >= 0) {
+                            badge.classList.add('bg-info', 'text-dark');
+                        } else {
+                            badge.classList.add('bg-danger');
+                        }
+                        
+                        td.textContent = '';
+                        td.appendChild(badge);
+                    } else {
+                        td.textContent = value;
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                
+                tbody.appendChild(tr);
+            });
+            
+            resultsSection.classList.remove('d-none');
+            window.scrollTo({
+                top: resultsSection.offsetTop - 20,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+</body>
+</html>
